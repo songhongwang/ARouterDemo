@@ -1,0 +1,82 @@
+if(isNeedModulePlayer.toBoolean()){
+    apply plugin: 'com.android.library'
+}else{
+    apply plugin: 'com.android.application'
+}
+
+android {
+    compileSdkVersion 26
+
+    buildToolsVersion '26.0.2'
+
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [AROUTER_MODULE_NAME: project.getName()]
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            if(rootProject.ext.isModuleDebug){
+                buildConfigField "boolean", "LOG_DEBUG", "true"
+            }else{
+                buildConfigField "boolean", "LOG_DEBUG", "false"
+            }
+
+
+        }
+        debug{
+            minifyEnabled false
+            if(rootProject.ext.isModuleDebug){
+                buildConfigField "boolean", "LOG_DEBUG", "true"
+            }else{
+                buildConfigField "boolean", "LOG_DEBUG", "false"
+            }
+
+        }
+    }
+
+}
+
+gradle.startParameter.getTaskNames().each { task ->
+    println("task: " + task)
+    //library里 BuildConfig.DEBUG默认一直是flase;所以需要自定义
+    if(task.contains("Debug")){
+        android{
+            defaultPublishConfig "debug"
+        }
+
+    }else if(task.contains("Release")){
+        android{
+            defaultPublishConfig "release"
+        }
+    }
+}
+
+
+dependencies {
+    androidTestCompile('com.android.support:support-annotations:26.1.0') {
+        force = true
+    }
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+    compile 'com.github.open-android:IjkPlayer:1.0.0'
+
+
+    annotationProcessor 'com.alibaba:arouter-compiler:1.2.2'
+    compile project(':libbase')
+}
